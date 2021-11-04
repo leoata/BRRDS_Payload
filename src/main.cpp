@@ -4,11 +4,16 @@
 #include <Wire.h>
 #include "SD.h"
 #include "PWFusion_TCA9548A.h"
+#include <avr/wdt.h>
 
 Adafruit_ICM20649 icm;
 Adafruit_Sensor *icm_temp, *icm_accel, *icm_gyro;
 TCA9548A i2cMux;
-Adafruit_MPRLS mpr = Adafruit_MPRLS();
+Adafruit_MPRLS mpr0 = Adafruit_MPRLS();
+Adafruit_MPRLS mpr1 = Adafruit_MPRLS();
+Adafruit_MPRLS mpr3 = Adafruit_MPRLS();
+Adafruit_MPRLS mpr7 = Adafruit_MPRLS();
+
 File sd;
 String fileName;
 
@@ -18,8 +23,18 @@ void setup(void)
     Wire.begin();
 
     i2cMux.begin();
-    icm.begin_I2C();
-    mpr.begin();
+    i2cMux.setChannel(CHAN0);
+    mpr0.begin();
+    i2cMux.setChannel(CHAN1);
+    mpr1.begin();
+    i2cMux.setChannel(CHAN3);
+    mpr3.begin();
+    i2cMux.setChannel(CHAN7);
+    mpr7.begin();
+
+    i2cMux.setChannel(CHAN5);
+    while (!icm.begin_I2C())
+        digitalWrite(3, HIGH);
 
     SD.begin(8);
     unsigned long time = millis();
@@ -33,17 +48,17 @@ void setup(void)
 
 String imu_loop();
 
-String mprls_loop(uint8_t chan);
+String mprls_loop(Adafruit_MPRLS* mpr, uint8_t chan);
 
 void loop()
 {
     String s;
     s.concat(millis());
     s.concat(",");
-    String mprls0 = mprls_loop(CHAN0);
-    String mprls1 = mprls_loop(CHAN1);
-    String mprls3 = mprls_loop(CHAN3);
-    String mprls7 = mprls_loop(CHAN7);
+    String mprls0 = mprls_loop(&mpr0, CHAN0);
+    String mprls1 = mprls_loop(&mpr1, CHAN1);
+    String mprls3 = mprls_loop(&mpr3, CHAN3);
+    String mprls7 = mprls_loop(&mpr7, CHAN7);
 
     s.concat(imu_loop());
     s.concat(",");
@@ -87,9 +102,9 @@ String imu_loop()
     return res;
 }
 
-String mprls_loop(uint8_t chan)
+String mprls_loop(Adafruit_MPRLS *mpr, uint8_t chan)
 {
     i2cMux.setChannel(chan);
-    float pressure_hPa = mpr.readPressure();
+    float pressure_hPa = mpr->readPressure();
     return String(pressure_hPa);
 }
