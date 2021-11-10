@@ -9,7 +9,6 @@
 Adafruit_ICM20649 icm;
 Adafruit_Sensor *icm_temp, *icm_accel, *icm_gyro;
 TCA9548A i2cMux;
-Adafruit_MPRLS mpr0 = Adafruit_MPRLS();
 Adafruit_MPRLS mpr1 = Adafruit_MPRLS();
 Adafruit_MPRLS mpr3 = Adafruit_MPRLS();
 Adafruit_MPRLS mpr7 = Adafruit_MPRLS();
@@ -23,8 +22,6 @@ void setup(void)
     Wire.begin();
 
     i2cMux.begin();
-    i2cMux.setChannel(CHAN0);
-    mpr0.begin();
     i2cMux.setChannel(CHAN1);
     mpr1.begin();
     i2cMux.setChannel(CHAN3);
@@ -55,14 +52,11 @@ void loop()
     String s;
     s.concat(millis());
     s.concat(",");
-    String mprls0 = mprls_loop(&mpr0, CHAN0);
     String mprls1 = mprls_loop(&mpr1, CHAN1);
     String mprls3 = mprls_loop(&mpr3, CHAN3);
     String mprls7 = mprls_loop(&mpr7, CHAN7);
 
     s.concat(imu_loop());
-    s.concat(",");
-    s.concat(mprls0);
     s.concat(",");
     s.concat(mprls1);
     s.concat(",");
