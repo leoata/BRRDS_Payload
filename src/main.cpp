@@ -22,16 +22,11 @@ void setup(void)
     Wire.begin();
 
     i2cMux.begin();
-    i2cMux.setChannel(CHAN1);
     mpr1.begin();
-    i2cMux.setChannel(CHAN3);
     mpr3.begin();
-    i2cMux.setChannel(CHAN7);
     mpr7.begin();
 
     i2cMux.setChannel(CHAN5);
-    while (!icm.begin_I2C())
-        digitalWrite(3, HIGH);
 
     SD.begin(8);
     unsigned long time = millis();
@@ -40,7 +35,7 @@ void setup(void)
     fileName.concat(time_string);
     fileName.concat(".csv");
     sd = SD.open(fileName.c_str(), FILE_WRITE);
-    sd.write("time,temperature,accelx,accely,accelz,gyrox,gyroy,gyroz,pressurehPa0,pressurehPa1,pressurehPa3,pressurehPa7\n");
+    sd.write("time,temperature,accelx,accely,accelz,gyrox,gyroy,gyroz,pressurehPa1,pressurehPa3,pressurehPa7\n");
 }
 
 String imu_loop();
