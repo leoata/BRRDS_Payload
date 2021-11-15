@@ -21,21 +21,33 @@ void setup(void)
     Serial.begin(9600);
     Wire.begin();
 
-    i2cMux.begin();
+    i2cMux.begin(4);
+    delay(100);
+    i2cMux.setChannel(CHAN1);
     mpr1.begin();
+    i2cMux.setChannel(CHAN3);
     mpr3.begin();
+    i2cMux.setChannel(CHAN7);
     mpr7.begin();
 
     i2cMux.setChannel(CHAN5);
+    icm.begin_I2C();
 
-    SD.begin(8);
+    // create name of file
     unsigned long time = millis();
     String time_string = String(time, 10);
     fileName = "test_";
     fileName.concat(time_string);
     fileName.concat(".csv");
+
+    // open and write headers
+    SD.begin(8);
     sd = SD.open(fileName.c_str(), FILE_WRITE);
     sd.write("time,temperature,accelx,accely,accelz,gyrox,gyroy,gyroz,pressurehPa1,pressurehPa3,pressurehPa7\n");
+    Serial.println("time,temperature,accelx,accely,accelz,gyrox,gyroy,gyroz,pressurehPa1,pressurehPa3,pressurehPa7\n");
+    // save and re-open
+    sd.close();
+    sd = SD.open(fileName.c_str(), FILE_WRITE);
 }
 
 String imu_loop();
@@ -67,28 +79,28 @@ void loop()
 
 String imu_loop()
 {
-    i2cMux.setChannel(CHAN5);
+ i2cMux.setChannel(CHAN5);
 
-    //  /* Get a new normalized sensor event */
-    sensors_event_t accel;
-    sensors_event_t gyro;
-    sensors_event_t temp;
-    icm.getEvent(&accel, &gyro, &temp);
-    String res;
-    res.concat(temp.temperature);
-    res.concat(",");
-    res.concat(accel.acceleration.x);
-    res.concat(",");
-    res.concat(accel.acceleration.y);
-    res.concat(",");
-    res.concat(accel.acceleration.z);
-    res.concat(",");
-    res.concat(gyro.gyro.x);
-    res.concat(",");
-    res.concat(gyro.gyro.y);
-    res.concat(",");
-    res.concat(gyro.gyro.z);
-    return res;
+   //   Get a new normalized sensor event
+   sensors_event_t accel;
+   sensors_event_t gyro;
+   sensors_event_t temp;
+   icm.getEvent(&accel, &gyro, &temp);
+   String res;
+   res.concat(temp.temperature);
+   res.concat(",");
+   res.concat(accel.acceleration.x);
+   res.concat(",");
+   res.concat(accel.acceleration.y);
+   res.concat(",");
+   res.concat(accel.acceleration.z);
+   res.concat(",");
+   res.concat(gyro.gyro.x);
+   res.concat(",");
+   res.concat(gyro.gyro.y);
+   res.concat(",");
+   res.concat(gyro.gyro.z);
+   return res;
 }
 
 String mprls_loop(Adafruit_MPRLS *mpr, uint8_t chan)
